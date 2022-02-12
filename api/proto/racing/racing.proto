@@ -18,6 +18,7 @@ service Racing {
 // Request for ListRaces call.
 message ListRacesRequest {
   ListRacesRequestFilter filter = 1;
+  ListRacesRequestSortBy sortBy = 2;
 }
 
 // Response to ListRaces call.
@@ -37,6 +38,12 @@ message ListRacesRequestFilter {
     3 - visible not present -> returns all races regardless of their visibility
   */
   optional bool visible = 2;
+}
+
+//
+message ListRacesRequestSortBy{
+  string property_name = 1;
+  bool descending = 2;
 }
 
 /* Resources */

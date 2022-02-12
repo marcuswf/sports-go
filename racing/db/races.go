@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"errors"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -18,7 +20,7 @@ type RacesRepo interface {
 	Init() error
 
 	// List will return a list of races.
-	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+	List(filter *racing.ListRacesRequestFilter, sortBy *racing.ListRacesRequestSortBy) ([]*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -43,7 +45,7 @@ func (r *racesRepo) Init() error {
 	return err
 }
 
-func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
+func (r *racesRepo) List(filter *racing.ListRacesRequestFilter, sortBy *racing.ListRacesRequestSortBy) ([]*racing.Race, error) {
 	var (
 		err   error
 		query string
@@ -54,12 +56,37 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 
 	query, args = r.applyFilter(query, filter)
 
+	query, err = r.applySortBy(query, sortBy)
+	if err != nil {
+		return nil, err
+	}
+
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
 
 	return r.scanRaces(rows)
+}
+
+func (r *racesRepo) applySortBy(query string, sortBy *racing.ListRacesRequestSortBy) (string, error) {
+	if sortBy == nil {
+		return query, nil
+	}
+
+	var column = strings.Trim(sortBy.PropertyName, " ")
+	if column != "" {
+		valid := regexp.MustCompile("^[A-Za-z0-9_]+$")
+		if !valid.MatchString(sortBy.PropertyName) { //avoid sql injection
+			return query, errors.New("Invalid sortBy / property_name")
+		}
+		query += " ORDER BY " + column
+		if sortBy.Descending == true {
+			query += " DESC"
+		}
+	}
+
+	return query, nil
 }
 
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {

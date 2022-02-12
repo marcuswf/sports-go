@@ -28,6 +28,15 @@ message ListRacesResponse {
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  /*
+    "optional" is there to identify wether the json property "visible" is present or not.
+    This way it is possible to return the following lists:
+
+    1 - visible:true -> returns only visible races
+    2 - visible:false -> returns only NOT visible races
+    3 - visible not present -> returns all races regardless of their visibility
+  */
+  optional bool visible = 2;
 }
 
 /* Resources */

@@ -48,6 +48,11 @@ message ListRacesRequestSortBy{
 
 /* Resources */
 
+enum Status {
+  OPEN = 0;
+  CLOSED = 1;
+}
+
 // A race resource.
 message Race {
   // ID represents a unique identifier for the race.
@@ -62,4 +67,6 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+  //Status represents the race is either closed or open.
+  Status status =7;
 }

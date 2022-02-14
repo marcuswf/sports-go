@@ -65,6 +65,9 @@ func (r *racesRepo) Get(raceId int64) (*racing.Race, error) {
 	}
 
 	races, err := r.scanRaces(rows)
+	if len(races) == 0 {
+		return nil, errors.New("Race not found")
+	}
 	return races[0], err
 }
 
